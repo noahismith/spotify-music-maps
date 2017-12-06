@@ -54,17 +54,27 @@ def get_profile_me(access_token):
     return json.loads(profile_data.text)
 
 
-def get_profile(auth_token, user_id):
-    headers = {"Authorization": "Basic {}".format(auth_token)}
+def get_profile(access_token, user_id):
+    authorization_header = {"Authorization": "Bearer {}".format(access_token)}
     user_profile_api_endpoint = "{}/users/{}".format(SPOTIFY_API_URL, user_id)
-    resp = requests.get(user_profile_api_endpoint, headers=headers)
-    print(resp.text)
-    return json.loads(resp.text)
+    profile_data = requests.get(user_profile_api_endpoint, headers=authorization_header)
+    print(profile_data.text)
+    return json.loads(profile_data.text)
 
 
 def get_track_info(auth_token):
+
     return
 
 
 def get_recent_track_id(auth_token):
+
+    return
+
+# me
+def get_current_track_id(access_token):
+    authorization_header = {"Authorization": "Bearer {}".format(access_token)}
+    current_playing_api_endpoint = "{}/me/player/currently-playing".format(SPOTIFY_API_URL)
+    current_playing_object = requests.get(current_playing_api_endpoint, headers=authorization_header)
+    print(current_playing_object.text)
     return

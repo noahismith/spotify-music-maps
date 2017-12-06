@@ -34,7 +34,6 @@ def callback():
     if ("error" in request.query_string):
         return make_response(redirect(url_for("index")))
 
-    # TODO: get access tokens
     code = request.args.get('code')
     tokens = get_tokens(code)
 
@@ -45,9 +44,7 @@ def callback():
 
     profile_data = get_profile_me(access_token)
 
-
-	 # Auth Step 6: Use the access token to access Spotify API
-    # Profile_data returns 403 if failed
+    # TODO: check for profile error
 
     user_id = profile_data['id']
 
@@ -56,8 +53,7 @@ def callback():
         # TODO: handle error user already exists
         return False
 
-
-    track_id = get_recent_track_id(access_token)
+    track_id = get_current_track_id(access_token)
     ip = request.remote_addr
     new_user = User(user_id, track_id, ip, access_token)
     new_user.save()
