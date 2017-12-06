@@ -4,7 +4,7 @@ from flask_sqlalchemy import SQLAlchemy
 import requests
 import base64
 import urllib
-from urlparse import urlparse
+from spotifyapi import *
 
 app = Flask(__name__)
 
@@ -14,71 +14,104 @@ app.config['DEBUG'] = True
 
 db = SQLAlchemy(app)
 
-#  Client Keys
-CLIENT_ID = "113d03ef95bd4e29889577312ec0817d"
-CLIENT_SECRET = "4fd53ac1a0554655b3b9f12d3c2c8421"
+from models import User
 
-# Spotify URLS
-SPOTIFY_AUTH_URL = "https://accounts.spotify.com/authorize"
-SPOTIFY_TOKEN_URL = "https://accounts.spotify.com/api/token"
-SPOTIFY_API_BASE_URL = "https://api.spotify.com"
-API_VERSION = "v1"
-SPOTIFY_API_URL = "{}/{}".format(SPOTIFY_API_BASE_URL, API_VERSION)
-
-
-# Server-side Parameters
-CLIENT_SIDE_URL = "http://52.15.141.175"
-REDIRECT_URI = CLIENT_SIDE_URL + "/profile"
-SCOPE = "playlist-modify-public playlist-modify-private"
-STATE = ""
-SHOW_DIALOG_bool = True
-SHOW_DIALOG_str = str(SHOW_DIALOG_bool).lower()
-
-
-auth_query_parameters = {
-    "response_type": "code",
-    "redirect_uri": REDIRECT_URI,
-    "scope": SCOPE,
-    # "state": STATE,
-    # "show_dialog": SHOW_DIALOG_str,
-    "client_id": CLIENT_ID
-}
 
 @app.route("/")
 def index():
-	return render_template('index.html') 	
+    return render_template('index.html')
 
-from models import User
 
 @app.route("/login")
 def login():
-	# Auth Step 1: Authorization
-	url_args = "&".join(["{}={}".format(key,urllib.quote(val)) for key,val in auth_query_parameters.iteritems()])
-	auth_url = "{}/?{}".format(SPOTIFY_AUTH_URL, url_args)
-	return redirect(auth_url)
+    # Auth Step 1: Authorization
+    url_args = "&".join(["{}={}".format(key, urllib.quote(val)) for key, val in auth_query_parameters.iteritems()])
+    auth_url = "{}/?{}".format(SPOTIFY_AUTH_URL, url_args)
+    return redirect(auth_url)
+
+@app.route("/callback")
+def callback():
+    if ("error" in request.query_string):
+        return make_response(redirect(url_for("index")))
+
+    # TODO: get access tokens
+    code = request.query_string.get('code')
+    tokens = get_tokens(request.query_string.code)
+
+    access_token = tokens["access_token"]
+    refresh_token = tokens["refresh_token"]
+    token_type = tokens["token_type"]
+    expires_in = tokens["expires_in"]
+
+    profile_data = get_profile(access_token)
+
+    # Profile_data returns 403 if failed
+
+    user_id = profile_data['id']
+
+    new_user = db.session.query(User).filter_by(user_id=id).first()
+    if new_user is not None:
+        # TODO: handle error user already exists
+        return False
+
+
+    track_id = get_recent_track_id(access_token)
+    ip = request.remote_addr
+    new_user = User(user_id, track_id, ip, access_token)
+    new_user.save()
+
+    return make_response(redirect(url_for("dashboard") + user_id))
+
 
 @app.route("/profile")
 def profile():
-	if ("error" in request.query_string):
-		return make_response(redirect(url_for("index")))
-	else: 
-		return make_response(redirect(url_for("index")))
+    payload = json.loads(requests.data.decode())
+    user_id = payload['id']
+    user = db.session.query(User).filter_by(user_id=user_id).first()
+    if user is None:
+        # TODO: return error
+        return False
+    # TODO: populate html profile page
+    return render_template('profile.html')
+
+
+@app.route("/dashboard")
+def dashboard():
+    payload = json.loads(requests.data.decode())
+    user_id = payload['id']
+    user = db.session.query(User).filter_by(user_id=user_id).first()
+    if user is None:
+        # TODO: return error
+        return False
+        # TODO: populate html profile page
+    return render_template('dashboard.html')
+
+
+@app.route("/follow")
+def follow():
+    return
+
+
+@app.route("/unfollow")
+def follow():
+    return
 
 
 @app.route("/geo")
 def geo():
-	send_url = 'http://ip-api.com/json/' + request.remote_addr
-	resp = requests.get(send_url)
-	json_data = json.loads(resp.text)
-	lat = json_data['lat']
-	lng = json_data['lon']
-	return render_template('geo.html', lat=lat, lng=lng)
+    send_url = 'http://ip-api.com/json/' + request.remote_addr
+    resp = requests.get(send_url)
+    json_data = json.loads(resp.text)
+    lat = json_data['lat']
+    lng = json_data['lon']
+    return render_template('geo.html', lat=lat, lng=lng)
 
-def create_user():
-    new_user = User(0, 0, 0.1, 0.2)
-    new_user.save()
-    return new_user.__repr__()
+
+def get_location(ip):
+    send_url = 'http://ip-api.com/json/' + ip
+    resp = requests.get(send_url)
+    return json.loads(resp.text)
 
 
 if __name__ == "__main__":
-    app.run(ssl_context="adhoc")
+    app.run()
