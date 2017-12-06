@@ -1,5 +1,5 @@
 import json
-from flask import Flask, request, redirect, g, render_template
+from flask import Flask, request, redirect, g, render_template, make_response, url_for, jsonify
 from flask_sqlalchemy import SQLAlchemy
 import requests
 import base64
@@ -60,11 +60,30 @@ def login():
 @app.route("/profile")
 def profile():
 	if ("error" in request.query_string):
-		return render_template('index.html')
+		return make_response(redirect(url_for("index")))
+		#return render_template('index.html')
 	else: 
-		return render_template('profile.html')
+		print("HEREQ")
+		send_url = 'http://freegeoip.net/json'
+		r = requests.get(send_url)
+		j = json.loads(r.text)
+		lat = j['latitude']
+		lon = j['longitude']
+		print 'Latitude: {} Longitude: {}'.format(lat, lon)
+		return make_response(redirect(url_for("index") + "?id=123"))
 
-@app.route("/test")
+
+@app.route("/geo")
+def geo():
+	
+	send_url = 'http://freegeoip.net/json'
+	r = requests.get(send_url)
+	j = json.loads(r.text)
+	lat = j['latitude']
+	lng = j['longitude']
+	print(request.remote_addr)
+	return render_template('geo2.html', lat=lat, lng=lng)
+
 def create_user():
     new_user = User(0, 0, 0.1, 0.2)
     new_user.save()
@@ -72,4 +91,4 @@ def create_user():
 
 
 if __name__ == "__main__":
-    app.run()
+    app.run(ssl_context="adhoc")
