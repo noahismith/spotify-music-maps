@@ -7,9 +7,9 @@ class User(db.Model):
 
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, unique=True, nullable=False)
-    track_id = db.Column(db.Integer, nullable=True)
-    ip = db.Column(db.String, nullable=True)
-    token = db.Column(db.String, nullable=False)
+    track_id = db.Column(db.String(255), nullable=True)
+    ip = db.Column(db.String(255), nullable=True)
+    token = db.Column(db.String(255), nullable=False)
 
     def __init__(self, user_id, track_id, ip, token):
         self.user_id = user_id

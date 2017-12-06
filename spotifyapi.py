@@ -19,7 +19,7 @@ SPOTIFY_API_URL = "{}/{}".format(SPOTIFY_API_BASE_URL, API_VERSION)
 # Server-side Parameters
 CLIENT_SIDE_URL = "http://52.15.141.175"
 REDIRECT_URI = CLIENT_SIDE_URL + "/callback"
-SCOPE = "playlist-modify-public playlist-modify-private"
+SCOPE = "playlist-modify-public playlist-modify-private user-read-currently-playing user-read-recently-played"
 STATE = ""
 SHOW_DIALOG_bool = True
 SHOW_DIALOG_str = str(SHOW_DIALOG_bool).lower()
@@ -66,15 +66,25 @@ def get_track_info(auth_token):
 
     return
 
-
-def get_recent_track_id(auth_token):
-
-    return
+# me
+def get_recent_track_id(access_token):
+    authorization_header = {"Authorization": "Bearer {}".format(access_token)}
+    recently_played_api_endpoint = "{}/me/player/recently-played".format(SPOTIFY_API_URL)
+    print(recently_played_api_endpoint)
+    recently_played_object = requests.get(recently_played_api_endpoint, headers=authorization_header)
+    #print(recently_played_object.text)
+    if recently_played_object.text is None:
+    	return ""
+    print(json.loads(recently_played_object.text)['items'][0]['track']['id'])
+    return json.loads(recently_played_object.text)['items'][0]['track']['id']
 
 # me
 def get_current_track_id(access_token):
     authorization_header = {"Authorization": "Bearer {}".format(access_token)}
     current_playing_api_endpoint = "{}/me/player/currently-playing".format(SPOTIFY_API_URL)
+    print(current_playing_api_endpoint)
     current_playing_object = requests.get(current_playing_api_endpoint, headers=authorization_header)
     print(current_playing_object.text)
-    return
+    if current_playing_object.text is None:
+        return get_recent_track_id(access_token)
+    return json.loads(current_playing_object.text)['item']['id']

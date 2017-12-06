@@ -48,12 +48,12 @@ def callback():
 
     user_id = profile_data['id']
 
-    new_user = db.session.query(User).filter_by(user_id=id).first()
+    new_user = db.session.query(User).filter_by(user_id=user_id).first()
     if new_user is not None:
         # TODO: handle error user already exists
         return False
-
-    track_id = get_current_track_id(access_token)
+    track_id = get_recent_track_id(access_token)	
+    # track_id = get_current_track_id(access_token)
     ip = request.remote_addr
     new_user = User(user_id, track_id, ip, access_token)
     new_user.save()
