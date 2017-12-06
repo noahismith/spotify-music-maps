@@ -51,8 +51,10 @@ def callback():
 
     new_user = db.session.query(User).filter_by(user_id=user_id).first()
     if new_user is not None:
-        # TODO: handle error user already exists
-    	return make_response(redirect(url_for("dashboard") + "?id=" + user_id), 303)
+	new_user.token = access_token
+	new_user.save()
+	# TODO: handle error user already exists
+	return make_response(redirect(url_for("dashboard") + "?id=" + user_id), 303)
     track_id = get_recent_track_id(access_token)	
     # track_id = get_current_track_id(access_token)
     ip = request.remote_addr
@@ -62,15 +64,16 @@ def callback():
     return make_response(redirect(url_for("dashboard") + "?id=" + user_id), 303)
 
 
-@app.route("/profile")
-def profile():
-    payload = json.loads(requests.data.decode())
-    user_id = payload['id']
+@app.route("/profile/<id>")
+def profile(id):
+    print("profile page")
+    #payload = json.loads(request.data.decode())
+    user_id = id
     user = db.session.query(User).filter_by(user_id=user_id).first()
     if user is None:
         # TODO: return error
         return False
-    profile_data = get_profile(user_id)
+    profile_data = get_profile(user.token, user_id)
     print(profile_data)
     return render_template('profile.html', profile=profile_data)
 
@@ -83,7 +86,7 @@ def dashboard():
         # TODO: return error
         return False
     # TODO: {user: "user_id", track: "link to recently played track", lat: "lat", lng: "long"}
-    return render_template('dashboard.html')
+    return render_template('dashboard.html', user_id=user_id)
 
 @app.route("/follow")
 def follow():

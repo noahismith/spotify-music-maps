@@ -39,7 +39,9 @@
   </head>
   <body>
   <ul>
-  <li><a href="">Profile</a></li>
+{% if user_id %}
+  <li><a href="http://52.15.141.175/profile/{{ user_id }}">Profile</a></li>
+{% endif %}
   </ul>
   <div class="page-header">
     <h1 align="center">Dashboard</h1>

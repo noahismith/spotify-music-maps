@@ -19,4 +19,5 @@ var marker = new google.maps.Marker({
 marker.addListener('click', function() {
   infowindow.open(map, marker);
 });
+return map;
 }

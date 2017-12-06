@@ -63,7 +63,7 @@ def get_profile(access_token, user_id):
 
 
 def get_track_info(auth_token):
-
+    # TODO: return track url
     return
 
 # me
@@ -86,5 +86,5 @@ def get_current_track_id(access_token):
     current_playing_object = requests.get(current_playing_api_endpoint, headers=authorization_header)
     print(current_playing_object.text)
     if current_playing_object.text is None:
-        return get_recent_track_id(access_token)
+        return ""
     return json.loads(current_playing_object.text)['item']['id']
