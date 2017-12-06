@@ -61,28 +61,18 @@ def login():
 def profile():
 	if ("error" in request.query_string):
 		return make_response(redirect(url_for("index")))
-		#return render_template('index.html')
 	else: 
-		print("HEREQ")
-		send_url = 'http://freegeoip.net/json'
-		r = requests.get(send_url)
-		j = json.loads(r.text)
-		lat = j['latitude']
-		lon = j['longitude']
-		print 'Latitude: {} Longitude: {}'.format(lat, lon)
-		return make_response(redirect(url_for("index") + "?id=123"))
+		return make_response(redirect(url_for("index")))
 
 
 @app.route("/geo")
 def geo():
-	
-	send_url = 'http://freegeoip.net/json'
-	r = requests.get(send_url)
-	j = json.loads(r.text)
-	lat = j['latitude']
-	lng = j['longitude']
-	print(request.remote_addr)
-	return render_template('geo2.html', lat=lat, lng=lng)
+	send_url = 'http://ip-api.com/json/' + request.remote_addr
+	resp = requests.get(send_url)
+	json_data = json.loads(resp.text)
+	lat = json_data['lat']
+	lng = json_data['lon']
+	return render_template('geo.html', lat=lat, lng=lng)
 
 def create_user():
     new_user = User(0, 0, 0.1, 0.2)
