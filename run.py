@@ -86,6 +86,16 @@ def dashboard():
         # TODO: return error
         return False
     # TODO: {user: "user_id", track: "link to recently played track", lat: "lat", lng: "long"}
+    all_users = User.get_all()
+
+    for user in all_users:
+        track = get_track_url()
+        maker = {
+            "user": user.user_id,
+
+
+        }
+
     return render_template('dashboard.html', user_id=user_id)
 
 @app.route("/follow")

@@ -62,9 +62,14 @@ def get_profile(access_token, user_id):
     return json.loads(profile_data.text)
 
 
-def get_track_info(auth_token):
+def get_track_url(access_token, track_id):
     # TODO: return track url
-    return
+    authorization_header = {"Authorization": "Bearer {}".format(access_token)}
+    get_track_api_endpoint = "{}/tracks/{}".format(SPOTIFY_API_URL, track_id)
+    print(get_track_api_endpoint)
+    track_object = requests.get(get_track_api_endpoint, headers=authorization_header)
+    print(track_object.text)
+    return ""
 
 # me
 def get_recent_track_id(access_token):
