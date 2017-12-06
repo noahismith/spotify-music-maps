@@ -14,7 +14,7 @@ $ sudo a2enmod wsgi
 ```
 Install flask, flask-sqlalchemy, pymsql
 ```sh
-$ sudo pip install Flask flask-sqlalchemy, pymysql
+$ sudo pip install Flask flask-sqlalchemy pymysql
 ```
  See [tutorial](https://www.digitalocean.com/community/tutorials/how-to-deploy-a-flask-application-on-an-ubuntu-vps) for more details
 
