@@ -19,6 +19,7 @@ from models import User
 
 @app.route("/")
 def index():
+    # TODO: {user: "user_id", track: "link to recently played track", lat: "lat", lng: "long"}
     return render_template('index.html')
 
 
@@ -58,7 +59,7 @@ def callback():
     new_user = User(user_id, track_id, ip, access_token)
     new_user.save()
 
-    return make_response(redirect(url_for("dashboard") + user_id))
+    return make_response(redirect(url_for("dashboard"), user_id=user_id))
 
 
 @app.route("/profile")
@@ -69,8 +70,9 @@ def profile():
     if user is None:
         # TODO: return error
         return False
-    # TODO: populate html profile page
-    return render_template('profile.html')
+    profile_data = get_profile(user_id)
+    print(profile_data)
+    return render_template('profile.html', profile=profile_data)
 
 
 @app.route("/dashboard")
@@ -81,7 +83,7 @@ def dashboard():
     if user is None:
         # TODO: return error
         return False
-        # TODO: populate html profile page
+    # TODO: {user: "user_id", track: "link to recently played track", lat: "lat", lng: "long"}
     return render_template('dashboard.html')
 
 
@@ -108,7 +110,10 @@ def geo():
 def get_location(ip):
     send_url = 'http://ip-api.com/json/' + ip
     resp = requests.get(send_url)
-    return json.loads(resp.text)
+    json_data = json.loads(resp.text)
+    lat = json_data['lat']
+    lng = json_data['lon']
+    return jsonify({'lat': lat, 'lng': lng})
 
 
 if __name__ == "__main__":

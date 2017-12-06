@@ -1,8 +1,7 @@
 <!DOCTYPE html>
+<doctype html>
 <html>
-{% if code %}
-<h1>Logged in</h1>
-{% else %}
-<h1>not logged in</h1>
-{% endif %}
+	{% for item in data%}
+	<p> {{ item }} </p>
+	{% endfor %}
 </html>
