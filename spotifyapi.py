@@ -50,7 +50,7 @@ def get_profile_me(access_token):
     authorization_header = {"Authorization":"Bearer {}".format(access_token)}
     user_profile_api_endpoint = "{}/me".format(SPOTIFY_API_URL)
     profile_data = requests.get(user_profile_api_endpoint, headers=authorization_header)
-    print(profile_data.text)
+    #print(profile_data.text)
     return json.loads(profile_data.text)
 
 
@@ -58,7 +58,7 @@ def get_profile(access_token, user_id):
     authorization_header = {"Authorization": "Bearer {}".format(access_token)}
     user_profile_api_endpoint = "{}/users/{}".format(SPOTIFY_API_URL, user_id)
     profile_data = requests.get(user_profile_api_endpoint, headers=authorization_header)
-    print(profile_data.text)
+    #print(profile_data.text)
     return json.loads(profile_data.text)
 
 
@@ -66,10 +66,10 @@ def get_track_url(access_token, track_id):
     # TODO: return track url
     authorization_header = {"Authorization": "Bearer {}".format(access_token)}
     get_track_api_endpoint = "{}/tracks/{}".format(SPOTIFY_API_URL, track_id)
-    print(get_track_api_endpoint)
+    #print(get_track_api_endpoint)
     track_object = requests.get(get_track_api_endpoint, headers=authorization_header)
     print(track_object.text)
-    return ""
+    return json.loads(track_object.text)['external_urls']['spotify']
 
 # me
 def get_recent_track_id(access_token):

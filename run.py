@@ -81,22 +81,35 @@ def profile(id):
 @app.route("/dashboard")
 def dashboard():
     user_id = request.args['id']
-    user = db.session.query(User).filter_by(user_id=user_id).first()
-    if user is None:
+    me_user = db.session.query(User).filter_by(user_id=user_id).first()
+    if me_user is None:
         # TODO: return error
         return False
     # TODO: {user: "user_id", track: "link to recently played track", lat: "lat", lng: "long"}
+    me_user.track_id = get_current_track_id(me_user.token)
+    print("THE ONLY THING THAT MATTERS: ", me_user.track_id)
+    me_user.ip = request.remote_addr
+    location = get_location(me_user.ip)
+    center_lat = location['lat']
+    center_lng = location['lon']
+    db.session.commit()
     all_users = User.get_all()
 
-    for user in all_users:
-        track = get_track_url()
-        maker = {
-            "user": user.user_id,
-
-
+    markers = []
+    for user_mark in all_users:
+        track = get_track_url(me_user.token, user_mark.track_id)
+	location = get_location(user_mark.ip)
+	lat = location['lat']
+	lng = location['lon']
+	marker = {
+	    "user": user_mark.user_id,
+	    "track": track,
+	    "lat": lat,
+	    "lng": lng
         }
+    	markers.append(marker)
 
-    return render_template('dashboard.html', user_id=user_id)
+    return render_template('dashboard.html', center_lat=center_lat, center_lng=center_lng, user_id=user_id, markers=markers)
 
 @app.route("/follow")
 def follow():
@@ -113,8 +126,6 @@ def geo():
     send_url = 'http://ip-api.com/json/' + request.remote_addr
     resp = requests.get(send_url)
     json_data = json.loads(resp.text)
-    lat = json_data['lat']
-    lng = json_data['lon']
     return render_template('geo.html', lat=lat, lng=lng)
 
 
@@ -124,7 +135,7 @@ def get_location(ip):
     json_data = json.loads(resp.text)
     lat = json_data['lat']
     lng = json_data['lon']
-    return jsonify({'lat': lat, 'lng': lng})
+    return json_data
 
 
 if __name__ == "__main__":
