@@ -43,18 +43,22 @@ def get_tokens(auth_token):
     base64encoded = base64.b64encode("{}:{}".format(CLIENT_ID, CLIENT_SECRET))
     headers = {"Authorization": "Basic {}".format(base64encoded)}
     post_request = requests.post(SPOTIFY_TOKEN_URL, data=code_payload, headers=headers)
-    return json.loads(post_request)
+    return json.loads(post_request.text)
 
 
-def get_profile(auth_token):
-    headers = {"Authorization": "Basic {}".format(auth_token)}
-    resp = requests.get(SPOTIFY_API_URL + "/me", headers)
-    return json.loads(resp.text)
+def get_profile_me(access_token):
+    authorization_header = {"Authorization":"Bearer {}".format(access_token)}
+    user_profile_api_endpoint = "{}/me".format(SPOTIFY_API_URL)
+    profile_data = requests.get(user_profile_api_endpoint, headers=authorization_header)
+    print(profile_data.text)
+    return json.loads(profile_data.text)
 
 
 def get_profile(auth_token, user_id):
     headers = {"Authorization": "Basic {}".format(auth_token)}
-    resp = requests.get(SPOTIFY_API_URL + "/users/" + user_id, headers)
+    user_profile_api_endpoint = "{}/users/{}".format(SPOTIFY_API_URL, user_id)
+    resp = requests.get(user_profile_api_endpoint, headers=headers)
+    print(resp.text)
     return json.loads(resp.text)
 
 

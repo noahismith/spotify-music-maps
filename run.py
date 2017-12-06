@@ -35,16 +35,18 @@ def callback():
         return make_response(redirect(url_for("index")))
 
     # TODO: get access tokens
-    code = request.query_string.get('code')
-    tokens = get_tokens(request.query_string.code)
+    code = request.args.get('code')
+    tokens = get_tokens(code)
 
     access_token = tokens["access_token"]
     refresh_token = tokens["refresh_token"]
     token_type = tokens["token_type"]
     expires_in = tokens["expires_in"]
 
-    profile_data = get_profile(access_token)
+    profile_data = get_profile_me(access_token)
 
+
+	 # Auth Step 6: Use the access token to access Spotify API
     # Profile_data returns 403 if failed
 
     user_id = profile_data['id']
@@ -93,7 +95,7 @@ def follow():
 
 
 @app.route("/unfollow")
-def follow():
+def unfollow():
     return
 
 
