@@ -1,6 +1,4 @@
 import json
-from flask import Flask, request, redirect, g, render_template
-from flask_sqlalchemy import SQLAlchemy
 import requests
 import base64
 import urllib
@@ -17,9 +15,9 @@ API_VERSION = "v1"
 SPOTIFY_API_URL = "{}/{}".format(SPOTIFY_API_BASE_URL, API_VERSION)
 
 # Server-side Parameters
-CLIENT_SIDE_URL = "http://52.15.141.175"
+CLIENT_SIDE_URL = "http://127.0.0.1:5000"
 REDIRECT_URI = CLIENT_SIDE_URL + "/callback"
-SCOPE = "playlist-modify-public playlist-modify-private user-read-currently-playing user-read-recently-played"
+SCOPE = "playlist-modify-public playlist-modify-private user-read-currently-playing user-read-recently-played user-modify-playback-state"
 STATE = ""
 SHOW_DIALOG_bool = True
 SHOW_DIALOG_str = str(SHOW_DIALOG_bool).lower()
@@ -34,6 +32,30 @@ auth_query_parameters = {
 }
 
 
+def get_auth_url():
+    url_args = "&".join(["{}={}".format(key, urllib.quote(val)) for key, val in auth_query_parameters.iteritems()])
+    return "{}/?{}".format(SPOTIFY_AUTH_URL, url_args)
+
+
+def post_request(url, data, headers):
+    try:
+        resp = requests.post(url, data=data, headers=headers)
+    except requests.exeptions.RequestException as e:
+        print(e)
+        return {"error": e}
+    return json.loads(resp.text)
+
+
+def get_request(url, headers):
+    try:
+        resp = requests.get(url, headers=headers)
+    except requests.exeptions.RequestException as e:
+        print("Exception ERROR: ", e)
+        return {"error": e}
+    print(resp)
+    return json.loads(resp.text)
+
+
 def get_tokens(auth_token):
     code_payload = {
         "grant_type": "authorization_code",
@@ -42,54 +64,36 @@ def get_tokens(auth_token):
     }
     base64encoded = base64.b64encode("{}:{}".format(CLIENT_ID, CLIENT_SECRET))
     headers = {"Authorization": "Basic {}".format(base64encoded)}
-    post_request = requests.post(SPOTIFY_TOKEN_URL, data=code_payload, headers=headers)
-    return json.loads(post_request.text)
+    return post_request(SPOTIFY_TOKEN_URL, code_payload, headers)
 
 
 def get_profile_me(access_token):
     authorization_header = {"Authorization":"Bearer {}".format(access_token)}
-    user_profile_api_endpoint = "{}/me".format(SPOTIFY_API_URL)
-    profile_data = requests.get(user_profile_api_endpoint, headers=authorization_header)
-    #print(profile_data.text)
-    return json.loads(profile_data.text)
+    api_endpoint = "{}/me".format(SPOTIFY_API_URL)
+    print(api_endpoint)
+    return get_request(api_endpoint, authorization_header)
 
 
 def get_profile(access_token, user_id):
     authorization_header = {"Authorization": "Bearer {}".format(access_token)}
-    user_profile_api_endpoint = "{}/users/{}".format(SPOTIFY_API_URL, user_id)
-    profile_data = requests.get(user_profile_api_endpoint, headers=authorization_header)
-    #print(profile_data.text)
-    return json.loads(profile_data.text)
+    api_endpoint = "{}/users/{}".format(SPOTIFY_API_URL, user_id)
+    return get_request(api_endpoint, authorization_header)
 
 
-def get_track_url(access_token, track_id):
-    # TODO: return track url
+def get_track(access_token, track_id):
     authorization_header = {"Authorization": "Bearer {}".format(access_token)}
-    get_track_api_endpoint = "{}/tracks/{}".format(SPOTIFY_API_URL, track_id)
-    #print(get_track_api_endpoint)
-    track_object = requests.get(get_track_api_endpoint, headers=authorization_header)
-    print(track_object.text)
-    return json.loads(track_object.text)['external_urls']['spotify']
+    api_endpoint = "{}/tracks/{}".format(SPOTIFY_API_URL, track_id)
+    return get_request(api_endpoint, authorization_header)
 
-# me
-def get_recent_track_id(access_token):
-    authorization_header = {"Authorization": "Bearer {}".format(access_token)}
-    recently_played_api_endpoint = "{}/me/player/recently-played".format(SPOTIFY_API_URL)
-    print(recently_played_api_endpoint)
-    recently_played_object = requests.get(recently_played_api_endpoint, headers=authorization_header)
-    #print(recently_played_object.text)
-    if recently_played_object.text is None:
-    	return ""
-    print(json.loads(recently_played_object.text)['items'][0]['track']['id'])
-    return json.loads(recently_played_object.text)['items'][0]['track']['id']
 
-# me
-def get_current_track_id(access_token):
+def get_recent_track_me(access_token):
     authorization_header = {"Authorization": "Bearer {}".format(access_token)}
-    current_playing_api_endpoint = "{}/me/player/currently-playing".format(SPOTIFY_API_URL)
-    print(current_playing_api_endpoint)
-    current_playing_object = requests.get(current_playing_api_endpoint, headers=authorization_header)
-    print(current_playing_object.text)
-    if current_playing_object.text is None:
-        return ""
-    return json.loads(current_playing_object.text)['item']['id']
+    api_endpoint = "{}/me/player/recently-played".format(SPOTIFY_API_URL)
+    return get_request(api_endpoint, authorization_header)['items'][0]['track']
+
+
+def get_current_track_me(access_token):
+    authorization_header = {"Authorization": "Bearer {}".format(access_token)}
+    api_endpoint = "{}/me/player/currently-playing".format(SPOTIFY_API_URL)
+    return get_request(api_endpoint, authorization_header)['item']
+

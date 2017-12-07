@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta name="viewport" content="initial-scale=1.0">
+    <meta charset="utf-8">
+    <style>
+      /* Always set the map height explicitly to define the size of the div
+       * element that contains the map. */
+      #map {
+        height: 50%;
+      }
+      /* Optional: Makes the sample page fill the window. */
+      html, body {
+        height: 100%;
+        margin: 1000;
+        padding: 1000;
+      }
+      .button {
+        background-color: #4CAF50;
+        border: none;
+        color: white;
+        padding: 15px 32px;
+        text-align: center;
+        text-decoration: none;
+        display: inline-block;
+        font-size: 16px;
+        margin: 4px 2px;
+        cursor: pointer;
+      }
+    ul {
+        list-style-type: none;
+        margin: 0;
+        padding: 0;
+      }
+      li {
+        display: inline;
+      }
+    </style>
+  </head>
+  <body>
+  <ul>
+{% if user_id %}
+  <li><a href="http://52.15.141.175/profile/{{ user_id }}">Profile</a></li>
+{% endif %}
+  </ul>
+  <div class="page-header">
+    <h1 align="center">Dashboard</h1>
+  </div>
+  <p align="center">Welcome {{ name }}</p>
+ <div id="map"></div>
+    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBWcM5inyPJQkhngqZfUcKWbR0a9awlP9g&callback=initMap" async defer></script>
+  <script>
+    function initMap() {
+        var uluru = {lat: 0, lng: 0};
+        var map = new google.maps.Map(document.getElementById('map'), {
+            zoom: 4,
+            center: uluru
+        });
+
+        var contentString = 'hi';
+        var points = {{ markers|tojson|safe }};
+
+        var marker;
+        var infowindow;
+
+        for (var i = 0; i < points.length; i++) {
+
+            marker = new google.maps.Marker({
+                position: new google.maps.LatLng(points[i].lat, points[i].lng),
+                map: map
+            });
+            contentString = '<li><a href="http://http://127.0.0.1:5000/profile/' +
+            points[i].user_id.toString()+
+            '">View Profile</a></li><br>' +
+            '<iframe src="https://open.spotify.com/embed/track/' +
+            points[i].track_id.toString()+
+            '"width="200" height="100" frameborder="0" allowtransparency="true"></iframe>';
+
+            infowindow = new google.maps.InfoWindow({
+                content: contentString
+            });
+            bindInfoWindow(marker, map, infowindow, contentString);
+
+        }
+        return map;
+    }
+
+    function bindInfoWindow(marker, map, infowindow, contentString) {
+        marker.addListener('click', function() {
+            infowindow.setContent(contentString);
+            infowindow.open(map, this);
+        });
+    }
+  </script>
+  </body>
+</html>

@@ -1,5 +1,7 @@
-from run import db
+from app import db
+from datetime import datetime
 from spotifyapi import *
+
 
 class User(db.Model):
 
@@ -28,11 +30,25 @@ class User(db.Model):
         db.session.delete(self)
         db.session.commit()
 
-    def update(self):
-        # TODO: get recent track_id, lat, and lon
-        self.track_id = get_recent_track_id()
-        self.ip = ""
+    def update(self, remote_addr, token):
+        track = get_current_track_me(token)
+        if "error" in track:
+            track = get_recent_track_me(token)
+            if "error" in track:
+                self.track_id = None
+            else:
+                self.track = track['id']
+                print("HERE", self.track)
+        else:
+            self.track = track['id']
+            db.session.commit()
+            print("HERE!", self.track, track['id'])
+
+        self.ip = remote_addr
+        self.token = token
         self.save()
+
+
 
     @staticmethod
     def get_all():
@@ -72,3 +88,38 @@ class Follower(db.Model):
     def get_following(self):
         following = db.session.query_property(Follower).filter_by(user_from=self.user_from).all()
         return following
+
+
+class Marker(db.Model):
+
+    __tablename__ = 'Markers'
+
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.ForeignKey('Users.id', ondelete='CASCADE'), nullable=False)
+    track_id = db.Column(db.String(255), nullable=True)
+    lat = db.Column(db.Float, nullable=False)
+    lng = db.Column(db.Float, nullable=False)
+    timestamp = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
+
+    user_rel = db.relationship('User', backref=db.backref('user_marker', passive_deletes=True), foreign_keys=user_id)
+
+    def __init__(self, user_id, track_id, lat, lng):
+        self.user_id = user_id
+        self.track_id = track_id
+        self.lat = lat
+        self.lng = lng
+
+    def __repr__(self):
+        return 'id: {}, user_id: {},  track_id: {}, lat: {}, lng {}'.format(self.id, self.user_id, self.track_id, self.lat, self.lng)
+
+    def save(self):
+        db.session.add(self)
+        db.session.commit()
+
+    def delete(self):
+        db.session.delete(self)
+        db.session.commit()
+
+    @staticmethod
+    def get_all():
+        return Marker.query.all()

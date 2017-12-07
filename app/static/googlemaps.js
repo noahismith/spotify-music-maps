@@ -6,6 +6,7 @@ var map = new google.maps.Map(document.getElementById('map'), {
 });
 
 var contentString = 'hi';
+contentString += {{ markers }};
 
 var infowindow = new google.maps.InfoWindow({
   content: contentString
