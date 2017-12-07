@@ -18,3 +18,5 @@ $ sudo pip install Flask flask-sqlalchemy pymysql
 ```
  See [tutorial](https://www.digitalocean.com/community/tutorials/how-to-deploy-a-flask-application-on-an-ubuntu-vps) for more details
 
+spotifyapi.py based on the following git repo
+https://github.com/drshrey/spotify-flask-auth-example.git
