@@ -35,14 +35,12 @@ class User(db.Model):
         if "error" in track:
             track = get_recent_track_me(token)
             if "error" in track:
-                self.track_id = None
+                self.track_id = self.track_id
             else:
-                self.track = track['id']
-                print("HERE", self.track)
+                self.track_id = track['id']
         else:
-            self.track = track['id']
+            self.track_id = track['id']
             db.session.commit()
-            print("HERE!", self.track, track['id'])
 
         self.ip = remote_addr
         self.token = token

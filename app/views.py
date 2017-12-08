@@ -26,10 +26,13 @@ def index():
             "lng": lng
         }
         markers.append(obj)
-
-
+    
+    location = get_location(user.ip)
+    center_lat = location['lat']
+    center_lng = location['lon']
+	
     print(markers)
-    return render_template('index.html', auth_url=get_auth_url(), markers=markers)
+    return render_template('index.html', auth_url=get_auth_url(), center_lat=center_lat, center_lng=center_lng, markers=markers)
 
 
 @views_blueprint.route("/login")
@@ -46,6 +49,8 @@ def callback():
 
     code = request.args.get('code')
     tokens = get_tokens(code)
+
+    print(tokens)
 
     access_token = tokens["access_token"]
     refresh_token = tokens["refresh_token"]

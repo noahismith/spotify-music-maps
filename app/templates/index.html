@@ -8,7 +8,7 @@
       /* Always set the map height explicitly to define the size of the div
        * element that contains the map. */
       #map {
-        height: 50%;
+        height: 75%;
       }
       /* Optional: Makes the sample page fill the window. */
       html, body {
@@ -42,7 +42,7 @@
   <div class="page-header">
     <h1 align="center">Spotify Music Maps</h1>
   </div>
-  <p align="center">Welcome</p>
+  <p align="center">Login in while listening to spotify to begin tracking</p>
   <div style="text-align:center">
       {% if auth_url %}
         <a href="{{ auth_url }}" class="button">Login with Spoitfy</a>
@@ -55,9 +55,9 @@
     <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBWcM5inyPJQkhngqZfUcKWbR0a9awlP9g&callback=initMap" async defer></script>
   <script>
     function initMap() {
-        var uluru = {lat: 0, lng: 0};
+        var uluru = {lat: {{ center_lat }}, lng: {{center_lng}} };
         var map = new google.maps.Map(document.getElementById('map'), {
-            zoom: 4,
+            zoom: 6,
             center: uluru
         });
 
@@ -73,7 +73,7 @@
                 position: new google.maps.LatLng(points[i].lat, points[i].lng),
                 map: map
             });
-            contentString = '<li><a href="http://http://127.0.0.1:5000/profile/' +
+            contentString = '<li><a href="https://open.spotify.com/user/' +
             points[i].user_id.toString()+
             '">View Profile</a></li><br>' +
             '<iframe src="https://open.spotify.com/embed/track/' +

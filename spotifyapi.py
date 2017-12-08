@@ -15,7 +15,7 @@ API_VERSION = "v1"
 SPOTIFY_API_URL = "{}/{}".format(SPOTIFY_API_BASE_URL, API_VERSION)
 
 # Server-side Parameters
-CLIENT_SIDE_URL = "http://127.0.0.1:5000"
+CLIENT_SIDE_URL = "http://52.15.141.175"
 REDIRECT_URI = CLIENT_SIDE_URL + "/callback"
 SCOPE = "playlist-modify-public playlist-modify-private user-read-currently-playing user-read-recently-played user-modify-playback-state"
 STATE = ""
@@ -52,7 +52,12 @@ def get_request(url, headers):
     except requests.exeptions.RequestException as e:
         print("Exception ERROR: ", e)
         return {"error": e}
-    print(resp)
+    if resp.status_code == 204:
+        return {
+            "item": {
+                "id": 0  
+            }
+        }     
     return json.loads(resp.text)
 
 
